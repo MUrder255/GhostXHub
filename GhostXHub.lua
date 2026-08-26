@@ -8,6 +8,7 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
 local TweenService = game:GetService("TweenService")
@@ -30,13 +31,20 @@ end
 local Settings = {
     title = "GHOSTX HUB",
     subtitle = "Developer Menu",
-    version = "3.1.0",
+    version = "3.2.0",
     toggleKey = Enum.KeyCode.RightShift,
     showDiagnostics = false,
     galaxyMotion = true,
     particlesEnabled = true,
     reducedMotion = false,
     compactMetrics = false,
+    developerVisionEnabled = false,
+    visionShowNames = true,
+    visionShowHealth = true,
+    visionShowDistance = true,
+    visionTeamCheck = false,
+    visionThroughWalls = false,
+    visionMaxDistance = 1000,
 }
 
 local Theme = {
@@ -365,30 +373,249 @@ end
 
 local Esp = {
     enabled = false,
-    mode = "Diagnostics",
+    authorized = false,
+    mode = "Developer Vision",
+    reason = "Authorization has not been checked",
+    entries = {},
+    updateAccumulator = 0,
 }
 
+local function authorizeDeveloperVision()
+    if RunService:IsStudio() then
+        return true, "Authorized Roblox Studio session"
+    end
+
+    if game.CreatorType == Enum.CreatorType.User and LocalPlayer.UserId == game.CreatorId then
+        return true, "Authorized experience creator"
+    end
+
+    local authorizer = ReplicatedStorage:FindFirstChild("GhostXAuthorize")
+    if authorizer and authorizer:IsA("RemoteFunction") then
+        local ok, result = pcall(function()
+            return authorizer:InvokeServer("DeveloperVision")
+        end)
+        if ok and result == true then
+            return true, "Authorized by the experience server"
+        end
+    end
+
+    return false, "Developer Vision requires Studio, the personal experience creator, or GhostXAuthorize approval"
+end
+
+local function destroyVisionEntry(player)
+    local entry = Esp.entries[player]
+    if not entry then
+        return
+    end
+
+    if entry.highlight then
+        entry.highlight:Destroy()
+    end
+    if entry.billboard then
+        entry.billboard:Destroy()
+    end
+    Esp.entries[player] = nil
+end
+
+local function clearVisionEntries()
+    local players = {}
+    for player in pairs(Esp.entries) do
+        table.insert(players, player)
+    end
+    for _, player in ipairs(players) do
+        destroyVisionEntry(player)
+    end
+end
+
+local function ensureVisionEntry(player)
+    if player == LocalPlayer or Esp.entries[player] then
+        return Esp.entries[player]
+    end
+
+    local highlight = create("Highlight", {
+        Name = "GhostXDeveloperHighlight",
+        FillColor = Theme.danger,
+        FillTransparency = 0.76,
+        OutlineColor = Theme.text,
+        OutlineTransparency = 0.08,
+        DepthMode = Enum.HighlightDepthMode.Occluded,
+        Enabled = false,
+    }, PlayerGui)
+
+    local billboard = create("BillboardGui", {
+        Name = "GhostXDeveloperInfo",
+        Size = UDim2.fromOffset(170, 48),
+        StudsOffset = Vector3.new(0, 3.25, 0),
+        AlwaysOnTop = false,
+        LightInfluence = 0,
+        MaxDistance = Settings.visionMaxDistance,
+        Enabled = false,
+    }, PlayerGui)
+
+    local panel = create("Frame", {
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Theme.panel,
+        BackgroundTransparency = 0.16,
+        BorderSizePixel = 0,
+    }, billboard)
+    corner(panel, 8)
+    stroke(panel, Theme.stroke, 0.48, 1)
+
+    local accent = create("Frame", {
+        Size = UDim2.fromOffset(3, 30),
+        Position = UDim2.fromOffset(7, 9),
+        BackgroundColor3 = Theme.danger,
+        BorderSizePixel = 0,
+    }, panel)
+    corner(accent, 2)
+
+    local nameLabel = create("TextLabel", {
+        Size = UDim2.new(1, -25, 0, 20),
+        Position = UDim2.fromOffset(18, 5),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.GothamBold,
+        Text = player.DisplayName,
+        TextColor3 = Theme.text,
+        TextSize = 11,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, panel)
+
+    local detailLabel = create("TextLabel", {
+        Size = UDim2.new(1, -25, 0, 17),
+        Position = UDim2.fromOffset(18, 25),
+        BackgroundTransparency = 1,
+        Font = Enum.Font.Code,
+        Text = "Waiting for character",
+        TextColor3 = Theme.muted,
+        TextSize = 9,
+        TextXAlignment = Enum.TextXAlignment.Left,
+    }, panel)
+
+    local entry = {
+        highlight = highlight,
+        billboard = billboard,
+        accent = accent,
+        name = nameLabel,
+        detail = detailLabel,
+    }
+    Esp.entries[player] = entry
+    return entry
+end
+
+local function visionColor(player)
+    local sameTeam = LocalPlayer.Team ~= nil and player.Team == LocalPlayer.Team
+    return sameTeam and Theme.success or Theme.danger, sameTeam
+end
+
+local function updateVisionEntry(player, entry)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    local head = character and character:FindFirstChild("Head")
+    local camera = workspace.CurrentCamera
+
+    if not character or not humanoid or not rootPart or not head or not camera or humanoid.Health <= 0 then
+        entry.highlight.Enabled = false
+        entry.billboard.Enabled = false
+        return
+    end
+
+    local distance = (camera.CFrame.Position - rootPart.Position).Magnitude
+    local color, sameTeam = visionColor(player)
+    local visible = distance <= Settings.visionMaxDistance
+        and not (Settings.visionTeamCheck and sameTeam)
+
+    entry.highlight.Adornee = character
+    entry.highlight.FillColor = color
+    entry.highlight.OutlineColor = color:Lerp(Theme.text, 0.58)
+    entry.highlight.DepthMode = Settings.visionThroughWalls
+        and Enum.HighlightDepthMode.AlwaysOnTop
+        or Enum.HighlightDepthMode.Occluded
+    entry.highlight.Enabled = visible
+
+    entry.billboard.Adornee = head
+    entry.billboard.AlwaysOnTop = Settings.visionThroughWalls
+    entry.billboard.MaxDistance = Settings.visionMaxDistance
+    entry.billboard.Enabled = visible
+        and (Settings.visionShowNames or Settings.visionShowHealth or Settings.visionShowDistance)
+
+    entry.accent.BackgroundColor3 = color
+    entry.name.Text = Settings.visionShowNames
+        and string.format("%s  @%s", player.DisplayName, player.Name)
+        or "DEVELOPER TARGET"
+
+    local details = {}
+    if Settings.visionShowHealth then
+        table.insert(details, string.format("%d HP", math.max(0, math.floor(humanoid.Health + 0.5))))
+    end
+    if Settings.visionShowDistance then
+        table.insert(details, string.format("%d studs", math.floor(distance + 0.5)))
+    end
+    entry.detail.Text = #details > 0 and table.concat(details, "  •  ") or "Authorized diagnostics"
+end
+
 function Esp.enable()
-    Esp.enabled = false
-    return false, "Visibility guard blocked player wall-visibility"
+    local authorized, reason = authorizeDeveloperVision()
+    Esp.authorized = authorized
+    Esp.reason = reason
+
+    if not authorized then
+        Esp.enabled = false
+        setSetting("developerVisionEnabled", false)
+        return false, reason
+    end
+
+    Esp.enabled = true
+    setSetting("developerVisionEnabled", true)
+    for _, player in ipairs(Players:GetPlayers()) do
+        ensureVisionEntry(player)
+    end
+    return true, reason
 end
 
 function Esp.disable()
     Esp.enabled = false
-    return true
+    setSetting("developerVisionEnabled", false)
+    clearVisionEntries()
+    return true, "Developer Vision disabled"
 end
 
-function Esp.setMode(mode)
-    assert(mode == "Diagnostics" or mode == "Team", "Unsupported diagnostics mode")
-    Esp.mode = mode
-    return Esp.mode
+function Esp.update(deltaTime)
+    if not Esp.enabled then
+        return
+    end
+
+    Esp.updateAccumulator = Esp.updateAccumulator + deltaTime
+    if Esp.updateAccumulator < 0.1 then
+        return
+    end
+    Esp.updateAccumulator = 0
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        local entry = ensureVisionEntry(player)
+        if entry then
+            updateVisionEntry(player, entry)
+        end
+    end
+end
+
+function Esp.playerAdded(player)
+    if Esp.enabled then
+        ensureVisionEntry(player)
+    end
+end
+
+function Esp.playerRemoving(player)
+    destroyVisionEntry(player)
 end
 
 function Esp.getStatus()
     return {
         enabled = Esp.enabled,
+        authorized = Esp.authorized,
         mode = Esp.mode,
-        message = "Server-provided diagnostics only",
+        message = Esp.reason,
     }
 end
 
@@ -1615,7 +1842,7 @@ local function runHealthCheck()
         { "Local player", LocalPlayer and LocalPlayer.Parent ~= nil },
         { "Render telemetry", RunService:IsClient() },
         { "Targeting guard", aim.active == false },
-        { "Visibility guard", esp.enabled == false },
+        { "Developer Vision authorization", not esp.enabled or esp.authorized },
         { "Galaxy engine", galaxyRoot and galaxyRoot.Parent ~= nil },
     }
 
@@ -1873,15 +2100,20 @@ local function buildModules(parent)
 
     makeModuleCard(
         page,
-        "Visibility Authorization Guard",
-        "Limits visibility features to server-provided diagnostics instead of player wall-visibility.",
+        "Developer Vision",
+        "Native owner-authorized highlights, names, health, distance, team filtering, and optional occlusion diagnostics.",
         Icons.diagnostics,
-        Theme.success,
-        "PROTECTED",
+        Theme.accentBright,
+        "OWNER ONLY",
         function()
-            local allowed, message = Esp.enable()
+            local allowed, message
+            if Esp.enabled then
+                allowed, message = Esp.disable()
+            else
+                allowed, message = Esp.enable()
+            end
             addLog(message, allowed and "success" or "warning")
-            notify("Visibility guard", message, allowed and Theme.success or Theme.warning)
+            notify("Developer Vision", message, allowed and Theme.success or Theme.warning)
         end
     )
 
@@ -1915,6 +2147,26 @@ end
 
 local function buildSettings(parent)
     local page = createPage(parent, "Settings")
+
+    makeSection(page, "Developer Vision", "Available only in Studio, to the personal experience creator, or through server approval", Icons.diagnostics)
+
+    makeToggle(page, "Enable Developer Vision", "Show authorized native player diagnostics", "developerVisionEnabled", function(value)
+        local allowed, message
+        if value then
+            allowed, message = Esp.enable()
+        else
+            allowed, message = Esp.disable()
+        end
+        addLog(message, allowed and "success" or "warning")
+        notify("Developer Vision", message, allowed and Theme.success or Theme.warning)
+    end)
+
+    makeToggle(page, "Occlusion diagnostics", "Allow authorized highlights and labels through geometry", "visionThroughWalls")
+    makeToggle(page, "Team filter", "Hide players on the local developer's team", "visionTeamCheck")
+    makeToggle(page, "Show names", "Display player and account names", "visionShowNames")
+    makeToggle(page, "Show health", "Display current humanoid health", "visionShowHealth")
+    makeToggle(page, "Show distance", "Display camera distance in studs", "visionShowDistance")
+
     makeSection(page, "Visual experience", "Personalize motion, particles, and interface telemetry", Icons.settings)
 
     makeToggle(page, "Galaxy motion", "Enable cursor parallax and subtle nebula movement", "galaxyMotion", function(value)
@@ -2324,6 +2576,7 @@ function Dashboard.mount()
     track(RunService.RenderStepped, function(deltaTime)
         updateTelemetry(deltaTime)
         updateGalaxyParallax()
+        Esp.update(deltaTime)
     end)
 
     track(UserInputService.InputBegan, function(input, processed)
@@ -2334,9 +2587,11 @@ function Dashboard.mount()
 
     track(Players.PlayerAdded, function(player)
         addLog(player.Name .. " joined the server")
+        Esp.playerAdded(player)
     end)
     track(Players.PlayerRemoving, function(player)
         addLog(player.Name .. " left the server")
+        Esp.playerRemoving(player)
     end)
 
     task.spawn(function()
@@ -2356,6 +2611,7 @@ function Dashboard.unmount()
     Dashboard.minimized = false
     currentPageName = nil
     starGeneration = starGeneration + 1
+    Esp.disable()
 
     for _, connection in ipairs(Dashboard.connections) do
         if connection.Connected then
