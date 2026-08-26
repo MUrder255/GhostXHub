@@ -1,6 +1,6 @@
 local Settings = {
-    title = "GhostX Developer Dashboard",
-    subtitle = "Authorized client diagnostics",
+    title = "GhostX Control Center",
+    subtitle = "General session tools and diagnostics",
     accentColor = Color3.fromRGB(87, 176, 255),
     showDiagnostics = true,
     starfieldEnabled = true,

@@ -173,7 +173,7 @@ function Dashboard.mount()
     end
 
     local overview = makePage("Overview")
-    createSection(overview, "Session overview", "Live client health and authorized runtime information")
+    createSection(overview, "Session overview", "Live runtime information and general controls")
     local cards = Instance.new("Frame")
     cards.Size = UDim2.new(1, 0, 0, 92)
     cards.BackgroundTransparency = 1
@@ -198,7 +198,7 @@ function Dashboard.mount()
     end)
 
     local diagnostics = makePage("Diagnostics")
-    createSection(diagnostics, "Runtime diagnostics", "Read-only values from the local Roblox client")
+    createSection(diagnostics, "Runtime diagnostics", "Read-only values from this Roblox client")
     createMetric(diagnostics, "Player", Players.LocalPlayer.DisplayName)
     createMetric(diagnostics, "User ID", Players.LocalPlayer.UserId)
     createMetric(diagnostics, "Place ID", game.PlaceId)
@@ -207,7 +207,7 @@ function Dashboard.mount()
     createMetric(diagnostics, "Visibility guard", Esp.getStatus().mode)
 
     local settingsPage = makePage("Settings")
-    createSection(settingsPage, "Dashboard settings", "Changes apply immediately for this session")
+    createSection(settingsPage, "Control center settings", "Changes apply immediately for this session")
     UI.createToggle(settingsPage, "Diagnostics overlay", Settings.showDiagnostics, function(value)
         Settings.set("showDiagnostics", value)
     end)
