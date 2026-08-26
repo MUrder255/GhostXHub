@@ -29,10 +29,10 @@ end
 
 local Settings = {
     title = "GHOSTX HUB",
-    subtitle = "Developer Control Deck",
-    version = "3.0.0",
+    subtitle = "Developer Menu",
+    version = "3.1.0",
     toggleKey = Enum.KeyCode.RightShift,
-    showDiagnostics = true,
+    showDiagnostics = false,
     galaxyMotion = true,
     particlesEnabled = true,
     reducedMotion = false,
@@ -403,43 +403,31 @@ local function createGalaxy(parent)
         Name = "Galaxy",
         Size = UDim2.fromScale(1, 1),
         BackgroundColor3 = Theme.void,
+        BackgroundTransparency = 0.48,
         BorderSizePixel = 0,
         ClipsDescendants = true,
     }, parent)
 
     gradient(galaxyRoot, {
-        Color3.fromRGB(3, 5, 16),
-        Color3.fromRGB(9, 9, 31),
-        Color3.fromRGB(4, 14, 28),
-        Color3.fromRGB(2, 4, 12),
+        Color3.fromRGB(5, 7, 19),
+        Color3.fromRGB(11, 13, 32),
+        Color3.fromRGB(5, 15, 27),
     }, 28)
 
     nebulaLayer = create("Frame", {
         Name = "Nebulae",
-        Size = UDim2.new(1, 160, 1, 160),
-        Position = UDim2.fromOffset(-80, -80),
+        Size = UDim2.new(1, 80, 1, 80),
+        Position = UDim2.fromOffset(-40, -40),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     }, galaxyRoot)
 
     local nebulae = {
         {
-            position = UDim2.fromScale(0.08, 0.05),
-            size = UDim2.fromOffset(520, 360),
-            colors = { Theme.purple, Color3.fromRGB(49, 77, 194) },
-            rotation = 24,
-        },
-        {
-            position = UDim2.fromScale(0.64, 0.46),
-            size = UDim2.fromOffset(620, 430),
-            colors = { Color3.fromRGB(15, 153, 198), Theme.accent },
-            rotation = 142,
-        },
-        {
-            position = UDim2.fromScale(0.42, -0.14),
-            size = UDim2.fromOffset(440, 320),
-            colors = { Theme.pink, Theme.purple },
-            rotation = 76,
+            position = UDim2.fromScale(0.57, 0.06),
+            size = UDim2.fromOffset(430, 290),
+            colors = { Color3.fromRGB(43, 74, 165), Color3.fromRGB(28, 132, 162) },
+            rotation = 128,
         },
     }
 
@@ -449,7 +437,7 @@ local function createGalaxy(parent)
             Size = data.size,
             Position = data.position,
             BackgroundColor3 = data.colors[1],
-            BackgroundTransparency = 0.82,
+            BackgroundTransparency = 0.93,
             BorderSizePixel = 0,
             Rotation = data.rotation,
         }, nebulaLayer)
@@ -459,8 +447,8 @@ local function createGalaxy(parent)
             data.colors,
             data.rotation,
             NumberSequence.new({
-                NumberSequenceKeypoint.new(0, 0.74),
-                NumberSequenceKeypoint.new(0.48, 0.88),
+                NumberSequenceKeypoint.new(0, 0.84),
+                NumberSequenceKeypoint.new(0.48, 0.94),
                 NumberSequenceKeypoint.new(1, 1),
             })
         )
@@ -468,47 +456,47 @@ local function createGalaxy(parent)
 
     farStars = create("Frame", {
         Name = "FarStars",
-        Size = UDim2.new(1, 80, 1, 80),
-        Position = UDim2.fromOffset(-40, -40),
+        Size = UDim2.new(1, 40, 1, 40),
+        Position = UDim2.fromOffset(-20, -20),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     }, galaxyRoot)
 
     nearStars = create("Frame", {
         Name = "NearStars",
-        Size = UDim2.new(1, 120, 1, 120),
-        Position = UDim2.fromOffset(-60, -60),
+        Size = UDim2.new(1, 60, 1, 60),
+        Position = UDim2.fromOffset(-30, -30),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     }, galaxyRoot)
 
     local random = Random.new(255)
-    for index = 1, 105 do
-        local near = index % 4 == 0
-        local size = near and random:NextInteger(2, 4) or random:NextInteger(1, 2)
+    for index = 1, 45 do
+        local near = index % 5 == 0
+        local size = near and random:NextInteger(2, 3) or 1
         local star = create("Frame", {
             Name = "Star" .. index,
             AnchorPoint = Vector2.new(0.5, 0.5),
             Size = UDim2.fromOffset(size, size),
             Position = UDim2.fromScale(random:NextNumber(), random:NextNumber()),
             BackgroundColor3 = (index % 11 == 0) and Theme.accentBright or Theme.text,
-            BackgroundTransparency = random:NextNumber(0.18, 0.72),
+            BackgroundTransparency = random:NextNumber(0.56, 0.88),
             BorderSizePixel = 0,
         }, near and nearStars or farStars)
         corner(star, size)
 
-        if index % 9 == 0 then
+        if index % 15 == 0 then
             TweenService:Create(
                 star,
                 TweenInfo.new(
-                    random:NextNumber(1.1, 2.8),
+                    random:NextNumber(2.2, 3.8),
                     Enum.EasingStyle.Sine,
                     Enum.EasingDirection.InOut,
                     -1,
                     true
                 ),
                 {
-                    BackgroundTransparency = 0.08,
+                    BackgroundTransparency = 0.42,
                     Size = UDim2.fromOffset(size + 1, size + 1),
                 }
             ):Play()
@@ -519,7 +507,7 @@ local function createGalaxy(parent)
         Name = "Vignette",
         Size = UDim2.fromScale(1, 1),
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.88,
+        BackgroundTransparency = 0.96,
         BorderSizePixel = 0,
     }, galaxyRoot)
 end
@@ -532,11 +520,11 @@ local function createMeteor()
     local meteor = create("Frame", {
         Name = "Meteor",
         AnchorPoint = Vector2.new(0.5, 0.5),
-        Size = UDim2.fromOffset(math.random(36, 78), 2),
+        Size = UDim2.fromOffset(math.random(28, 48), 1),
         Position = UDim2.fromScale(math.random(-8, 58) / 100, math.random(-8, 38) / 100),
         Rotation = math.random(28, 38),
         BackgroundColor3 = Theme.accentBright,
-        BackgroundTransparency = 0.16,
+        BackgroundTransparency = 0.5,
         BorderSizePixel = 0,
     }, nearStars)
     corner(meteor, 2)
@@ -585,7 +573,7 @@ local function restartGalaxyMotion()
     task.spawn(function()
         while Dashboard.mounted and generation == starGeneration do
             createMeteor()
-            task.wait(math.random(32, 68) / 10)
+            task.wait(math.random(90, 160) / 10)
         end
     end)
 end
@@ -1101,55 +1089,55 @@ local function buildLoader(parent)
     local shade = create("Frame", {
         Size = UDim2.fromScale(1, 1),
         BackgroundColor3 = Theme.void,
-        BackgroundTransparency = 0.12,
+        BackgroundTransparency = 0.58,
         BorderSizePixel = 0,
         ZIndex = 100,
     }, loader)
     gradient(shade, {
-        Color3.fromRGB(4, 5, 18),
-        Color3.fromRGB(13, 8, 38),
-        Color3.fromRGB(4, 16, 31),
+        Color3.fromRGB(5, 7, 18),
+        Color3.fromRGB(10, 12, 29),
+        Color3.fromRGB(5, 15, 27),
     }, 35)
 
     local bootCard = create("Frame", {
-        Size = UDim2.fromOffset(480, 340),
+        Size = UDim2.fromOffset(420, 278),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Theme.panel,
-        BackgroundTransparency = 0.08,
+        BackgroundTransparency = 0.03,
         BorderSizePixel = 0,
         ZIndex = 102,
     }, loader)
-    corner(bootCard, 18)
-    stroke(bootCard, Theme.accent, 0.45, 1)
+    corner(bootCard, 15)
+    stroke(bootCard, Theme.accent, 0.56, 1)
     gradient(bootCard, {
-        Color3.fromRGB(24, 26, 65),
+        Color3.fromRGB(22, 27, 59),
         Theme.panel,
         Color3.fromRGB(10, 22, 43),
     }, 125)
 
     local orbit = create("Frame", {
-        Size = UDim2.fromOffset(124, 124),
-        Position = UDim2.new(0.5, -62, 0, 28),
+        Size = UDim2.fromOffset(94, 94),
+        Position = UDim2.new(0.5, -47, 0, 18),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         ZIndex = 104,
     }, bootCard)
 
     local ring = create("Frame", {
-        Size = UDim2.fromOffset(106, 106),
-        Position = UDim2.fromOffset(9, 9),
+        Size = UDim2.fromOffset(80, 80),
+        Position = UDim2.fromOffset(7, 7),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         ZIndex = 104,
     }, orbit)
-    corner(ring, 53)
+    corner(ring, 40)
     stroke(ring, Theme.accentBright, 0.48, 2)
 
     for index, data in ipairs({
-        { 57, -4, 8, Theme.accentBright },
-        { 112, 57, 6, Theme.purple },
-        { 57, 112, 5, Theme.pink },
+        { 47, 0, 7, Theme.accentBright },
+        { 88, 47, 5, Theme.purple },
+        { 47, 88, 4, Theme.accent },
     }) do
         local dot = create("Frame", {
             Name = "OrbitDot" .. index,
@@ -1164,13 +1152,13 @@ local function buildLoader(parent)
     end
 
     local core = create("Frame", {
-        Size = UDim2.fromOffset(82, 82),
-        Position = UDim2.new(0.5, -41, 0.5, -41),
+        Size = UDim2.fromOffset(60, 60),
+        Position = UDim2.new(0.5, -30, 0.5, -30),
         BackgroundColor3 = Theme.accent,
         BorderSizePixel = 0,
         ZIndex = 105,
     }, orbit)
-    corner(core, 24)
+    corner(core, 18)
     stroke(core, Theme.accentBright, 0.24, 2)
     gradient(core, { Theme.purple, Theme.accent, Theme.accentBright }, 135)
 
@@ -1180,7 +1168,7 @@ local function buildLoader(parent)
         Font = Enum.Font.GothamBlack,
         Text = "GX",
         TextColor3 = Theme.text,
-        TextSize = 28,
+        TextSize = 22,
         ZIndex = 106,
     }, core)
 
@@ -1196,30 +1184,30 @@ local function buildLoader(parent)
     ):Play()
 
     create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 30),
-        Position = UDim2.fromOffset(20, 164),
+        Size = UDim2.new(1, -40, 0, 26),
+        Position = UDim2.fromOffset(20, 116),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBlack,
         Text = "GHOSTX",
         TextColor3 = Theme.text,
-        TextSize = 23,
+        TextSize = 20,
         ZIndex = 104,
     }, bootCard)
 
     create("TextLabel", {
         Size = UDim2.new(1, -40, 0, 20),
-        Position = UDim2.fromOffset(20, 194),
+        Position = UDim2.fromOffset(20, 143),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamMedium,
-        Text = "INITIALIZING DEVELOPER CONTROL DECK",
+        Text = "INITIALIZING GHOSTX MENU",
         TextColor3 = Theme.muted,
         TextSize = 9,
         ZIndex = 104,
     }, bootCard)
 
     local progressTrack = create("Frame", {
-        Size = UDim2.new(1, -72, 0, 6),
-        Position = UDim2.fromOffset(36, 245),
+        Size = UDim2.new(1, -64, 0, 5),
+        Position = UDim2.fromOffset(32, 190),
         BackgroundColor3 = Theme.void,
         BackgroundTransparency = 0.15,
         BorderSizePixel = 0,
@@ -1238,7 +1226,7 @@ local function buildLoader(parent)
 
     local statusText = create("TextLabel", {
         Size = UDim2.new(1, -110, 0, 20),
-        Position = UDim2.fromOffset(36, 263),
+        Position = UDim2.fromOffset(32, 207),
         BackgroundTransparency = 1,
         Font = Enum.Font.Code,
         Text = "Preparing interface...",
@@ -1250,7 +1238,7 @@ local function buildLoader(parent)
 
     local percentText = create("TextLabel", {
         Size = UDim2.fromOffset(60, 20),
-        Position = UDim2.new(1, -96, 0, 263),
+        Position = UDim2.new(1, -92, 0, 207),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBold,
         Text = "0%",
@@ -1262,7 +1250,7 @@ local function buildLoader(parent)
 
     create("TextLabel", {
         Size = UDim2.new(1, -60, 0, 34),
-        Position = UDim2.fromOffset(30, 294),
+        Position = UDim2.fromOffset(30, 238),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
         Text = "RightShift toggles the dashboard after startup",
@@ -1282,19 +1270,28 @@ end
 local function buildHeader(parent)
     local header = create("Frame", {
         Name = "Header",
-        Size = UDim2.new(1, 0, 0, 72),
+        Size = UDim2.new(1, 0, 0, 64),
         BackgroundColor3 = Theme.panelRaised,
         BackgroundTransparency = 0.16,
         BorderSizePixel = 0,
         Active = true,
     }, parent)
 
-    local brandIcon = makeIcon(header, "GX", Theme.accent, 42)
-    brandIcon.Position = UDim2.fromOffset(16, 15)
+    local headerLine = create("Frame", {
+        Size = UDim2.new(1, 0, 0, 1),
+        Position = UDim2.new(0, 0, 1, -1),
+        BackgroundColor3 = Theme.accent,
+        BackgroundTransparency = 0.48,
+        BorderSizePixel = 0,
+    }, header)
+    gradient(headerLine, { Theme.accent, Theme.accentBright, Theme.purple }, 0)
+
+    local brandIcon = makeIcon(header, "GX", Theme.accent, 36)
+    brandIcon.Position = UDim2.fromOffset(14, 14)
 
     create("TextLabel", {
         Size = UDim2.fromOffset(180, 23),
-        Position = UDim2.fromOffset(70, 13),
+        Position = UDim2.fromOffset(60, 9),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBlack,
         Text = Settings.title,
@@ -1305,7 +1302,7 @@ local function buildHeader(parent)
 
     create("TextLabel", {
         Size = UDim2.fromOffset(240, 18),
-        Position = UDim2.fromOffset(70, 36),
+        Position = UDim2.fromOffset(60, 32),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
         Text = Settings.subtitle .. "  •  v" .. Settings.version,
@@ -1316,7 +1313,7 @@ local function buildHeader(parent)
 
     local online = create("Frame", {
         Size = UDim2.fromOffset(112, 28),
-        Position = UDim2.new(1, -224, 0, 22),
+        Position = UDim2.new(1, -214, 0, 18),
         BackgroundColor3 = Theme.success,
         BackgroundTransparency = 0.88,
         BorderSizePixel = 0,
@@ -1354,7 +1351,7 @@ local function buildHeader(parent)
         textSize = 15,
         radius = 8,
     })
-    minimize.Position = UDim2.new(1, -92, 0, 21)
+    minimize.Position = UDim2.new(1, -88, 0, 17)
 
     local close = makeButton(header, "×", function() end, {
         size = UDim2.fromOffset(34, 30),
@@ -1363,7 +1360,7 @@ local function buildHeader(parent)
         textSize = 16,
         radius = 8,
     })
-    close.Position = UDim2.new(1, -50, 0, 21)
+    close.Position = UDim2.new(1, -48, 0, 17)
 
     local dragging = false
     local dragInput
@@ -1409,7 +1406,7 @@ local function buildHeader(parent)
         shellBody.Visible = not Dashboard.minimized
         minimize.Text = Dashboard.minimized and "+" or "—"
         animate(shell, 0.24, {
-            Size = Dashboard.minimized and UDim2.fromOffset(1060, 72) or UDim2.fromOffset(1060, 660),
+            Size = Dashboard.minimized and UDim2.fromOffset(840, 64) or UDim2.fromOffset(840, 540),
         })
     end)
 
@@ -1423,7 +1420,7 @@ end
 local function buildSidebar(parent)
     local sidebar = create("Frame", {
         Name = "Sidebar",
-        Size = UDim2.new(0, 205, 1, 0),
+        Size = UDim2.new(0, 175, 1, 0),
         BackgroundColor3 = Theme.panel,
         BackgroundTransparency = 0.15,
         BorderSizePixel = 0,
@@ -1439,18 +1436,18 @@ local function buildSidebar(parent)
 
     create("TextLabel", {
         Size = UDim2.new(1, -28, 0, 22),
-        Position = UDim2.fromOffset(14, 14),
+        Position = UDim2.fromOffset(14, 10),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBold,
-        Text = "CONTROL DECK",
+        Text = "NAVIGATION",
         TextColor3 = Theme.faint,
         TextSize = 8,
         TextXAlignment = Enum.TextXAlignment.Left,
     }, sidebar)
 
     local nav = create("Frame", {
-        Size = UDim2.new(1, -20, 0, 250),
-        Position = UDim2.fromOffset(10, 42),
+        Size = UDim2.new(1, -20, 0, 224),
+        Position = UDim2.fromOffset(10, 34),
         BackgroundTransparency = 1,
     }, sidebar)
     create("UIListLayout", {
@@ -1470,7 +1467,7 @@ local function buildSidebar(parent)
         local name, symbol = data[1], data[2]
         local button = create("TextButton", {
             Name = name,
-            Size = UDim2.new(1, 0, 0, 44),
+            Size = UDim2.new(1, 0, 0, 40),
             BackgroundColor3 = Theme.panel,
             BackgroundTransparency = 1,
             BorderSizePixel = 0,
@@ -1489,8 +1486,8 @@ local function buildSidebar(parent)
         corner(indicator, 2)
 
         local icon = create("TextLabel", {
-            Size = UDim2.fromOffset(30, 30),
-            Position = UDim2.fromOffset(11, 7),
+            Size = UDim2.fromOffset(28, 28),
+            Position = UDim2.fromOffset(10, 6),
             BackgroundColor3 = Theme.surface,
             BackgroundTransparency = 0.3,
             BorderSizePixel = 0,
@@ -1503,7 +1500,7 @@ local function buildSidebar(parent)
 
         local label = create("TextLabel", {
             Size = UDim2.new(1, -58, 1, 0),
-            Position = UDim2.fromOffset(51, 0),
+            Position = UDim2.fromOffset(47, 0),
             BackgroundTransparency = 1,
             Font = Enum.Font.GothamMedium,
             Text = name,
@@ -1540,8 +1537,8 @@ local function buildSidebar(parent)
     end
 
     local profile = create("Frame", {
-        Size = UDim2.new(1, -20, 0, 76),
-        Position = UDim2.new(0, 10, 1, -88),
+        Size = UDim2.new(1, -20, 0, 68),
+        Position = UDim2.new(0, 10, 1, -78),
         BackgroundColor3 = Theme.surface,
         BackgroundTransparency = 0.18,
         BorderSizePixel = 0,
@@ -1550,8 +1547,8 @@ local function buildSidebar(parent)
     stroke(profile, Theme.stroke, 0.75, 1)
 
     local avatar = create("ImageLabel", {
-        Size = UDim2.fromOffset(42, 42),
-        Position = UDim2.fromOffset(11, 10),
+        Size = UDim2.fromOffset(38, 38),
+        Position = UDim2.fromOffset(10, 10),
         BackgroundColor3 = Theme.accent,
         BackgroundTransparency = 0.7,
         BorderSizePixel = 0,
@@ -1574,7 +1571,7 @@ local function buildSidebar(parent)
 
     create("TextLabel", {
         Size = UDim2.new(1, -70, 0, 20),
-        Position = UDim2.fromOffset(62, 11),
+        Position = UDim2.fromOffset(56, 8),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBold,
         Text = LocalPlayer.DisplayName,
@@ -1586,7 +1583,7 @@ local function buildSidebar(parent)
 
     create("TextLabel", {
         Size = UDim2.new(1, -70, 0, 18),
-        Position = UDim2.fromOffset(62, 31),
+        Position = UDim2.fromOffset(56, 27),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
         Text = "@" .. LocalPlayer.Name,
@@ -1597,8 +1594,8 @@ local function buildSidebar(parent)
     }, profile)
 
     local role = create("TextLabel", {
-        Size = UDim2.fromOffset(94, 16),
-        Position = UDim2.fromOffset(62, 51),
+        Size = UDim2.fromOffset(78, 14),
+        Position = UDim2.fromOffset(56, 47),
         BackgroundColor3 = Theme.accent,
         BackgroundTransparency = 0.84,
         BorderSizePixel = 0,
@@ -1681,7 +1678,7 @@ local function buildOverview(parent)
         Position = UDim2.fromOffset(22, 44),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamBlack,
-        Text = "Your universe is online.",
+        Text = "Everything is ready.",
         TextColor3 = Theme.text,
         TextSize = 25,
         TextXAlignment = Enum.TextXAlignment.Left,
@@ -1692,7 +1689,7 @@ local function buildOverview(parent)
         Position = UDim2.fromOffset(22, 86),
         BackgroundTransparency = 1,
         Font = Enum.Font.Gotham,
-        Text = "Monitor the client, verify modules, and control the GhostX experience from one deck.",
+        Text = "Monitor the client, verify modules, and manage GhostX from one compact menu.",
         TextColor3 = Theme.muted,
         TextSize = 10,
         TextWrapped = true,
@@ -2007,7 +2004,7 @@ local function buildAbout(parent)
         Position = UDim2.fromOffset(20, 168),
         BackgroundTransparency = 1,
         Font = Enum.Font.GothamMedium,
-        Text = "Advanced Developer Control Deck  •  Version " .. Settings.version,
+        Text = "Compact Developer Menu  •  Version " .. Settings.version,
         TextColor3 = Theme.accentBright,
         TextSize = 10,
     }, aboutCard)
@@ -2026,7 +2023,7 @@ local function buildAbout(parent)
     makeSection(page, "Build information", nil, Icons.about)
     makeInfoRow(page, "Project", "MUrder255/GhostXHub", "◆")
     makeInfoRow(page, "Release channel", "Stable", "✓")
-    makeInfoRow(page, "Interface build", "Galaxy Control Deck", Icons.galaxy)
+    makeInfoRow(page, "Interface build", "Compact Developer Menu", Icons.galaxy)
     makeInfoRow(page, "Runtime", "Roblox Luau Client", Icons.terminal)
     makeInfoRow(page, "Visibility key", Settings.toggleKey.Name, "⌨")
 end
@@ -2034,18 +2031,18 @@ end
 local function buildMainInterface()
     shell = create("CanvasGroup", {
         Name = "ControlDeck",
-        Size = UDim2.fromOffset(1060, 660),
+        Size = UDim2.fromOffset(840, 540),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Theme.panel,
-        BackgroundTransparency = 0.04,
+        BackgroundTransparency = 0.015,
         BorderSizePixel = 0,
         GroupTransparency = 1,
         Visible = false,
         ClipsDescendants = true,
     }, galaxyRoot)
-    corner(shell, 16)
-    stroke(shell, Theme.stroke, 0.42, 1)
+    corner(shell, 14)
+    stroke(shell, Theme.stroke, 0.5, 1)
 
     shellScale = create("UIScale", {
         Scale = 0.94,
@@ -2055,8 +2052,8 @@ local function buildMainInterface()
 
     shellBody = create("Frame", {
         Name = "Body",
-        Size = UDim2.new(1, 0, 1, -72),
-        Position = UDim2.fromOffset(0, 72),
+        Size = UDim2.new(1, 0, 1, -64),
+        Position = UDim2.fromOffset(0, 64),
         BackgroundTransparency = 1,
     }, shell)
 
@@ -2064,8 +2061,8 @@ local function buildMainInterface()
 
     local content = create("Frame", {
         Name = "Content",
-        Size = UDim2.new(1, -229, 1, -28),
-        Position = UDim2.fromOffset(217, 14),
+        Size = UDim2.new(1, -199, 1, -24),
+        Position = UDim2.fromOffset(187, 12),
         BackgroundTransparency = 1,
     }, shellBody)
 
@@ -2078,8 +2075,8 @@ local function buildMainInterface()
 
     diagnosticsOverlay = create("Frame", {
         Name = "DiagnosticsOverlay",
-        Size = UDim2.fromOffset(258, 66),
-        Position = UDim2.new(1, -276, 0, 16),
+        Size = UDim2.fromOffset(228, 58),
+        Position = UDim2.new(1, -244, 0, 14),
         BackgroundColor3 = Theme.panel,
         BackgroundTransparency = 0.08,
         BorderSizePixel = 0,
@@ -2103,7 +2100,7 @@ local function buildMainInterface()
 
     Dashboard.overlayValue = create("TextLabel", {
         Size = UDim2.new(1, -20, 0, 26),
-        Position = UDim2.fromOffset(10, 30),
+        Position = UDim2.fromOffset(10, 27),
         BackgroundTransparency = 1,
         Font = Enum.Font.Code,
         Text = "FPS --  |  PING --  |  MEM --",
@@ -2115,8 +2112,8 @@ local function buildMainInterface()
 
     toastContainer = create("Frame", {
         Name = "Notifications",
-        Size = UDim2.fromOffset(330, 330),
-        Position = UDim2.new(1, -346, 1, -346),
+        Size = UDim2.fromOffset(304, 300),
+        Position = UDim2.new(1, -320, 1, -316),
         BackgroundTransparency = 1,
         ZIndex = 80,
     }, root)
@@ -2134,8 +2131,8 @@ local function buildMainInterface()
             return
         end
         local viewport = camera.ViewportSize
-        local fit = math.min((viewport.X - 30) / 1060, (viewport.Y - 30) / 660, 1)
-        shellScale.Scale = math.max(0.58, fit)
+        local fit = math.min((viewport.X - 24) / 840, (viewport.Y - 24) / 540, 1)
+        shellScale.Scale = math.max(0.68, fit)
     end
 
     updateScale()
@@ -2150,7 +2147,7 @@ local function runBootSequence(boot)
         { 0.29, "Synchronizing module guards..." },
         { 0.48, "Generating galaxy field..." },
         { 0.67, "Connecting live telemetry..." },
-        { 0.84, "Securing developer control deck..." },
+        { 0.84, "Finalizing GhostX menu..." },
         { 1.00, "GhostX systems ready." },
     }
 
@@ -2199,10 +2196,10 @@ local function runBootSequence(boot)
     end
 
     Dashboard.booted = true
-    addLog("GhostX control deck initialized", "success")
+    addLog("GhostX menu initialized", "success")
     task.defer(function()
         runHealthCheck()
-        notify("Welcome to GhostX", "Developer control deck is online", Theme.accentBright)
+        notify("Welcome to GhostX", "Developer menu is online", Theme.accentBright)
     end)
 end
 
@@ -2290,13 +2287,13 @@ local function updateGalaxyParallax()
     local x = (mouse.X / viewport.X) - 0.5
     local y = (mouse.Y / viewport.Y) - 0.5
     if farStars then
-        farStars.Position = UDim2.fromOffset(-40 - x * 8, -40 - y * 8)
+        farStars.Position = UDim2.fromOffset(-20 - x * 3, -20 - y * 3)
     end
     if nearStars then
-        nearStars.Position = UDim2.fromOffset(-60 - x * 18, -60 - y * 18)
+        nearStars.Position = UDim2.fromOffset(-30 - x * 6, -30 - y * 6)
     end
     if nebulaLayer then
-        nebulaLayer.Position = UDim2.fromOffset(-80 - x * 12, -80 - y * 12)
+        nebulaLayer.Position = UDim2.fromOffset(-40 - x * 4, -40 - y * 4)
     end
 end
 
