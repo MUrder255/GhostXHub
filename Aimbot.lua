@@ -19,13 +19,3 @@ function Aimbot.getStatus()
 end
 
 return Aimbot
-
-function Aimbot.start()
-	return false, "Player targeting is not implemented"
-end
-
-function Aimbot.stop()
-	return true
-end
-
-return Aimbot

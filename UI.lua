@@ -7,7 +7,6 @@ local COLORS = {
     surface = Color3.fromRGB(16, 24, 38),
     surfaceRaised = Color3.fromRGB(25, 37, 56),
     accent = Color3.fromRGB(87, 176, 255),
-    success = Color3.fromRGB(93, 211, 158),
 }
 
 local function applyCorner(instance, radius)
@@ -34,28 +33,20 @@ local function createShootingStar(parent)
         BackgroundTransparency = 1,
     })
     travel.Completed:Connect(function()
-        star:Destroy()
+        if star.Parent then
+            star:Destroy()
+        end
     end)
     travel:Play()
 end
 
-local function startStarfield(parent)
-    task.spawn(function()
-        while parent.Parent do
-            createShootingStar(parent)
-            task.wait(math.random(28, 70) / 10)
-        end
-    end)
-end
-
 function UI.createRoot(playerGui, starsEnabled)
     assert(playerGui, "playerGui is required")
-
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "GhostXDashboard"
+    screenGui.Name = "GhostXDeveloperDashboard"
     screenGui.ResetOnSpawn = false
     screenGui.IgnoreGuiInset = true
-    screenGui.DisplayOrder = 10
+    screenGui.DisplayOrder = 100
     screenGui.Parent = playerGui
 
     local backdrop = Instance.new("Frame")
@@ -76,19 +67,29 @@ function UI.createRoot(playerGui, starsEnabled)
     gradient.Rotation = 28
     gradient.Parent = backdrop
 
-    if starsEnabled ~= false then
-        startStarfield(backdrop)
-    end
+    local stars = Instance.new("Frame")
+    stars.Name = "Stars"
+    stars.Size = UDim2.fromScale(1, 1)
+    stars.BackgroundTransparency = 1
+    stars.ClipsDescendants = true
+    stars.Parent = backdrop
 
+    if starsEnabled ~= false then
+        task.spawn(function()
+            while screenGui.Parent and stars.Parent do
+                createShootingStar(stars)
+                task.wait(math.random(28, 70) / 10)
+            end
+        end)
+    end
     return screenGui
 end
 
 function UI.createPanel(parent, title, subtitle)
     assert(parent, "parent is required")
-
     local panel = Instance.new("Frame")
-    panel.Name = "DashboardPanel"
-    panel.Size = UDim2.fromScale(0.86, 0.78)
+    panel.Name = "Panel"
+    panel.Size = UDim2.new(0.82, 0, 0.76, 0)
     panel.Position = UDim2.fromScale(0.5, 0.5)
     panel.AnchorPoint = Vector2.new(0.5, 0.5)
     panel.BackgroundColor3 = COLORS.surface
@@ -98,26 +99,23 @@ function UI.createPanel(parent, title, subtitle)
     panel.Parent = parent
     applyCorner(panel, 14)
 
-    local sizeConstraint = Instance.new("UISizeConstraint")
-    sizeConstraint.MinSize = Vector2.new(520, 360)
-    sizeConstraint.MaxSize = Vector2.new(980, 650)
-    sizeConstraint.Parent = panel
+    local constraint = Instance.new("UISizeConstraint")
+    constraint.MinSize = Vector2.new(520, 360)
+    constraint.MaxSize = Vector2.new(980, 650)
+    constraint.Parent = panel
 
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(137, 190, 232)
     stroke.Transparency = 0.62
-    stroke.Thickness = 1
     stroke.Parent = panel
 
     local header = Instance.new("Frame")
-    header.Name = "Header"
     header.Size = UDim2.new(1, -40, 0, 68)
     header.Position = UDim2.fromOffset(20, 16)
     header.BackgroundTransparency = 1
     header.Parent = panel
 
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Name = "Title"
     titleLabel.Size = UDim2.new(1, 0, 0, 32)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Font = Enum.Font.GothamBold
@@ -128,7 +126,6 @@ function UI.createPanel(parent, title, subtitle)
     titleLabel.Parent = header
 
     local subtitleLabel = Instance.new("TextLabel")
-    subtitleLabel.Name = "Subtitle"
     subtitleLabel.Size = UDim2.new(1, 0, 0, 22)
     subtitleLabel.Position = UDim2.fromOffset(0, 34)
     subtitleLabel.BackgroundTransparency = 1
@@ -145,7 +142,6 @@ function UI.createPanel(parent, title, subtitle)
     content.Position = UDim2.fromOffset(20, 92)
     content.BackgroundTransparency = 1
     content.Parent = panel
-
     return panel, content
 end
 
@@ -159,10 +155,10 @@ function UI.createCard(parent, title, value, accentColor)
     card.Parent = parent
     applyCorner(card, 9)
 
-    local cardStroke = Instance.new("UIStroke")
-    cardStroke.Color = accentColor or COLORS.accent
-    cardStroke.Transparency = 0.78
-    cardStroke.Parent = card
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = accentColor or COLORS.accent
+    stroke.Transparency = 0.78
+    stroke.Parent = card
 
     local heading = Instance.new("TextLabel")
     heading.Size = UDim2.new(1, -20, 0, 24)
@@ -181,12 +177,11 @@ function UI.createCard(parent, title, value, accentColor)
     reading.Position = UDim2.fromOffset(10, 36)
     reading.BackgroundTransparency = 1
     reading.Font = Enum.Font.GothamBold
-    reading.Text = value
+    reading.Text = tostring(value)
     reading.TextColor3 = COLORS.text
     reading.TextSize = 22
     reading.TextXAlignment = Enum.TextXAlignment.Left
     reading.Parent = card
-
     return card, reading
 end
 
@@ -204,9 +199,8 @@ function UI.createButton(parent, text, callback)
     button.TextSize = 13
     button.Parent = parent
     applyCorner(button, 7)
-
     button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = COLORS.accent}):Play()
+        TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(87, 176, 255)}):Play()
     end)
     button.MouseLeave:Connect(function()
         TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = COLORS.surfaceRaised}):Play()
@@ -216,138 +210,14 @@ function UI.createButton(parent, text, callback)
 end
 
 function UI.createToggle(parent, label, initialValue, callback)
-    local button = UI.createButton(parent, label, function()
+    local toggle = UI.createButton(parent, label, function()
         initialValue = not initialValue
+        toggle.Text = string.format("%s    %s", label, initialValue and "ON" or "OFF")
         callback(initialValue)
     end)
-    button.TextXAlignment = Enum.TextXAlignment.Left
-    button.Text = string.format("%s    %s", label, initialValue and "ON" or "OFF")
-    button.Activated:Connect(function()
-        button.Text = string.format("%s    %s", label, initialValue and "ON" or "OFF")
-    end)
-    return button
-end
-
-return UI
-
-local function createShootingStar(parent)
-    local star = Instance.new("Frame")
-    star.Name = "ShootingStar"
-    star.AnchorPoint = Vector2.new(0.5, 0.5)
-    star.Size = UDim2.fromOffset(math.random(18, 42), 2)
-    star.Position = UDim2.fromScale(math.random(-10, 75) / 100, math.random(-15, 45) / 100)
-    star.Rotation = math.random(25, 42)
-    star.BackgroundColor3 = Color3.fromRGB(170, 218, 255)
-    star.BackgroundTransparency = 0.12
-    star.BorderSizePixel = 0
-    star.Parent = parent
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = star
-
-    local travel = TweenService:Create(
-        star,
-        TweenInfo.new(math.random(12, 20) / 10, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
-        {
-            Position = UDim2.fromScale(math.random(90, 125) / 100, math.random(80, 125) / 100),
-            BackgroundTransparency = 1,
-        }
-    )
-
-    travel.Completed:Connect(function()
-        star:Destroy()
-    end)
-    travel:Play()
-end
-
-local function startStarfield(parent)
-    task.spawn(function()
-        while parent.Parent do
-            createShootingStar(parent)
-            task.wait(math.random(35, 85) / 10)
-        end
-    end)
-end
-
-function UI.createRoot(playerGui)
-    assert(playerGui, "playerGui is required")
-
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "GhostXDashboard"
-    screenGui.ResetOnSpawn = false
-    screenGui.Parent = playerGui
-
-    local backdrop = Instance.new("Frame")
-    backdrop.Name = "Starfield"
-    backdrop.Size = UDim2.fromScale(1, 1)
-    backdrop.BackgroundColor3 = Color3.fromRGB(7, 12, 22)
-    backdrop.BackgroundTransparency = 0.08
-    backdrop.BorderSizePixel = 0
-    backdrop.ClipsDescendants = true
-    backdrop.ZIndex = 0
-    backdrop.Parent = screenGui
-
-    local backdropGradient = Instance.new("UIGradient")
-    backdropGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(8, 17, 33)),
-        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(11, 22, 36)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(4, 9, 18)),
-    })
-    backdropGradient.Rotation = 25
-    backdropGradient.Parent = backdrop
-
-    startStarfield(backdrop)
-
-    return screenGui
-end
-
-function UI.createPanel(parent, title)
-    assert(parent, "parent is required")
-
-    local panel = Instance.new("Frame")
-    panel.Name = title or "Panel"
-    panel.Size = UDim2.fromOffset(420, 280)
-    panel.Position = UDim2.fromScale(0.5, 0.5)
-    panel.AnchorPoint = Vector2.new(0.5, 0.5)
-    panel.BackgroundColor3 = Color3.fromRGB(17, 25, 38)
-    panel.BackgroundTransparency = 0.18
-    panel.BorderSizePixel = 0
-    panel.ZIndex = 2
-    panel.Parent = parent
-
-    local panelCorner = Instance.new("UICorner")
-    panelCorner.CornerRadius = UDim.new(0, 12)
-    panelCorner.Parent = panel
-
-    local panelStroke = Instance.new("UIStroke")
-    panelStroke.Color = Color3.fromRGB(137, 190, 232)
-    panelStroke.Transparency = 0.62
-    panelStroke.Thickness = 1
-    panelStroke.Parent = panel
-
-    local panelGradient = Instance.new("UIGradient")
-    panelGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 57, 82)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(12, 18, 29)),
-    })
-    panelGradient.Rotation = 110
-    panelGradient.Parent = panel
-
-    local header = Instance.new("TextLabel")
-    header.Name = "Title"
-    header.Size = UDim2.new(1, -24, 0, 42)
-    header.Position = UDim2.fromOffset(12, 8)
-    header.BackgroundTransparency = 1
-    header.Font = Enum.Font.GothamBold
-    header.Text = title or "Dashboard"
-    header.TextColor3 = Color3.fromRGB(240, 243, 248)
-    header.TextSize = 19
-    header.TextXAlignment = Enum.TextXAlignment.Left
-    header.ZIndex = 3
-    header.Parent = panel
-
-    return panel
+    toggle.TextXAlignment = Enum.TextXAlignment.Left
+    toggle.Text = string.format("%s    %s", label, initialValue and "ON" or "OFF")
+    return toggle
 end
 
 return UI

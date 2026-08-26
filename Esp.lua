@@ -26,13 +26,3 @@ end
 
 return Esp
 
-function Esp.enable()
-	return false, "Player wall-visibility is not implemented"
-end
-
-function Esp.disable()
-	return true
-end
-
-return Esp
-
