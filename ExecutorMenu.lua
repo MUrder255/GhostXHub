@@ -3,7 +3,7 @@
     Executor-ready rewrite of the simple "MenuUI" LocalScript.
 
     Usage (executor):
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MUrder255/GhostXHub/main/ExecutorMenu.lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MUrder255/GhostXHub/claude/executor-ui-mod-menu-tzkh2j/ExecutorMenu.lua"))()
 
     - Parents to gethui() / CoreGui when available (falls back to PlayerGui)
     - Re-executing cleanly unloads the previous instance
@@ -285,7 +285,7 @@ local Tab = {}
 Tab.__index = Tab
 
 function Library:AddTab(name)
-    tabCount += 1
+    tabCount = tabCount + 1
     local b = new("TextButton", {
         Size = UDim2.new(1, 0, 0, 34), BackgroundColor3 = Theme.Item,
         Text = name, TextColor3 = Theme.Text, TextSize = 14,
@@ -311,7 +311,7 @@ function Library:AddTab(name)
 end
 
 function Tab:_row(height)
-    self.Order += 1
+    self.Order = self.Order + 1
     local row = new("Frame", {
         Size = UDim2.new(1, 0, 0, height), BackgroundColor3 = Theme.Item,
         LayoutOrder = self.Order,
@@ -329,7 +329,7 @@ local function rowLabel(row, text, width)
 end
 
 function Tab:AddSection(text)
-    self.Order += 1
+    self.Order = self.Order + 1
     new("TextLabel", {
         Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1,
         Text = string.upper(text), TextColor3 = Theme.SubText,
@@ -339,7 +339,7 @@ function Tab:AddSection(text)
 end
 
 function Tab:AddLabel(text)
-    self.Order += 1
+    self.Order = self.Order + 1
     local l = new("TextLabel", {
         Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1, Text = text, TextWrapped = true,
@@ -350,7 +350,7 @@ function Tab:AddLabel(text)
 end
 
 function Tab:AddButton(text, callback)
-    self.Order += 1
+    self.Order = self.Order + 1
     local b = new("TextButton", {
         Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = Theme.Item,
         Text = text, TextColor3 = Theme.Text, TextSize = 14,
@@ -540,7 +540,7 @@ function Tab:AddKeybind(text, flag, default, callback)
         conn = UIS.InputBegan:Connect(function(i)
             if i.UserInputType ~= Enum.UserInputType.Keyboard then return end
             conn:Disconnect()
-            key = if i.KeyCode == Enum.KeyCode.Escape then nil else i.KeyCode
+            if i.KeyCode == Enum.KeyCode.Escape then key = nil else key = i.KeyCode end
             b.Text = key and key.Name or "None"
             if flag then Library.Flags[flag] = key end
             if callback then task.spawn(callback, key) end
@@ -638,8 +638,8 @@ track(RunService.RenderStepped:Connect(function()
             dir = dir + Vector3.new(0, look.Y * fwd, 0)
         end
     end
-    if UIS:IsKeyDown(Enum.KeyCode.Space) then dir += Vector3.new(0, 1, 0) end
-    if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir -= Vector3.new(0, 1, 0) end
+    if UIS:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0, 1, 0) end
+    if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0, 1, 0) end
     if dir.Magnitude > 0 then dir = dir.Unit end
     root.AssemblyLinearVelocity = dir * Library.Flags.FlySpeed
 end))
