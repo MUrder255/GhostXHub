@@ -1,8 +1,7 @@
 -- Example LocalScript (StarterPlayerScripts). Place SettingsMenu as a
--- ModuleScript in ReplicatedStorage and DevToolsPermission.server.lua in
--- ServerScriptService.
+-- ModuleScript in ReplicatedStorage.
 --
---   Player ESP  - admin-only spectator outlines (Highlight + BillboardGui).
+--   Player ESP  - owner/admin-only spectator outlines (Highlight + BillboardGui).
 --   NPC Lock-On - hold right mouse to lock the camera onto the nearest NPC
 --                 tagged "LockOnTarget" (CollectionService). Players are
 --                 never valid targets.
@@ -23,6 +22,23 @@ local LOCK_TAG = "LockOnTarget"
 local LOCK_RANGE = 120          -- studs
 local LOCK_SMOOTHNESS = 0.25    -- 0-1, higher = snappier
 local LOCK_KEY = Enum.UserInputType.MouseButton2
+
+-- Who sees the Player ESP toggle besides the place owner.
+local ADMIN_USER_IDS = {
+    -- [12345678] = true,
+}
+local MIN_GROUP_RANK = 254 -- for group-owned games
+
+local function isAdmin()
+    if ADMIN_USER_IDS[LocalPlayer.UserId] then
+        return true
+    end
+    if game.CreatorType == Enum.CreatorType.User then
+        return LocalPlayer.UserId == game.CreatorId
+    end
+    local ok, rank = pcall(LocalPlayer.GetRankInGroup, LocalPlayer, game.CreatorId)
+    return ok and rank >= MIN_GROUP_RANK
+end
 
 --------------------------------------------------------------------------
 -- Player ESP (admin only)
@@ -216,13 +232,7 @@ menu:AddToggle({
     callback = LockOn.setEnabled,
 })
 
-local permission = ReplicatedStorage:WaitForChild("DevToolsPermission", 10)
-local ok, isAdmin = false, false
-if permission then
-    ok, isAdmin = pcall(permission.InvokeServer, permission)
-end
-
-if ok and isAdmin then
+if isAdmin() then
     menu:AddSection("Admin")
     menu:AddToggle({
         name = "Player ESP",
